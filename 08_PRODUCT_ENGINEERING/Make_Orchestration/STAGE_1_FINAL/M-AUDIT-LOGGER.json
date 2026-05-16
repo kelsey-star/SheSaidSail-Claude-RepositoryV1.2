@@ -1,0 +1,112 @@
+{
+  "name": "SSS-AUDIT-LOGGER",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "parameters": {
+        "hook": "SSS_AUDIT_LOGGER_HOOK",
+        "maxResults": 1
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": { "x": 0, "y": 0 },
+        "restore": { "parameters": { "hook": { "label": "SSS Audit Logger Webhook" } } }
+      }
+    },
+    {
+      "id": 2,
+      "module": "builtin:BasicFilter",
+      "version": 1,
+      "parameters": {
+        "condition": {
+          "left": "{{1.environment}}",
+          "operator": "exist"
+        },
+        "throw": false
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": { "x": 200, "y": 0 },
+        "restore": {}
+      }
+    },
+    {
+      "id": 3,
+      "module": "airtable:ActionCreateRecord",
+      "version": 3,
+      "parameters": {
+        "base": "appdZ49WqgjRXxA1R",
+        "table": "tblrMpTfMk8q1eNHp"
+      },
+      "mapper": {
+        "fields": {
+          "Timestamp": "{{formatDate(now; \"YYYY-MM-DDTHH:mm:ssZ\")}}",
+          "Triggering_Event": "{{1.triggering_event}}",
+          "Source_Data": "{{1.source_data}}",
+          "Output": "{{1.output}}",
+          "Approval_State": "{{ifempty(1.approval_state; \"AUTONOMOUS\")}}",
+          "Reviewed_By": "{{1.reviewed_by}}",
+          "Rollback_Linkage": "{{1.rollback_linkage}}",
+          "Brand": "{{ifempty(1.brand; \"SSS\")}}",
+          "City": "{{1.city}}",
+          "Environment": "{{ifempty(1.environment; \"Production\")}}",
+          "Model_Version": "{{1.model_version}}",
+          "AI_Confidence_Score": "{{1.ai_confidence_score}}",
+          "Destination": "{{1.destination}}"
+        }
+      },
+      "metadata": {
+        "designer": { "x": 400, "y": 0 },
+        "restore": {
+          "parameters": {
+            "base": { "label": "She Said Sail" },
+            "table": { "label": "Audit Log" }
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "module": "builtin:SetVariables",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "variables": [
+          {
+            "name": "audit_record_id",
+            "value": "{{3.id}}"
+          },
+          {
+            "name": "audit_success",
+            "value": "true"
+          }
+        ]
+      },
+      "metadata": {
+        "designer": { "x": 600, "y": 0 }
+      }
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": {
+      "orphans": []
+    },
+    "zone": "us1.make.com",
+    "notes": "REBINDING REQUIRED: Airtable connection must be rebound to SSS PAT. Table = Audit Log (tblrMpTfMk8q1eNHp). Base = appdZ49WqgjRXxA1R. Copy webhook URL after import — all other scenarios call this via HTTP."
+  }
+}
