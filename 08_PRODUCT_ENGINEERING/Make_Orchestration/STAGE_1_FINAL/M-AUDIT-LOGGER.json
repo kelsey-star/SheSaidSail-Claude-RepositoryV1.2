@@ -68,9 +68,11 @@
           "flow": [
             {
               "id": 5,
-              "module": "http:ActionSendData",
-              "version": 3,
-              "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
+              "module": "slack:ActionPostMessage",
+              "version": 1,
+              "parameters": {
+                "channel": "#sss-ops-alerts"
+              },
               "filter": {
                 "name": "PENDING_HUMAN — human action required",
                 "conditions": [[
@@ -78,12 +80,16 @@
                 ]]
               },
               "mapper": {
-                "url": "PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE",
-                "method": "POST",
-                "headers": [{ "name": "Content-Type", "value": "application/json" }],
-                "body": "{\"alert_type\": \"OPS\", \"severity\": \"WARNING\", \"title\": \"⚠️ Audit Log — Human Action Required\", \"body\": \"*Event:* {{1.triggering_event}}\\n*Output:* {{1.output}}\\n*Destination:* {{1.destination}}\\n*Audit Record:* {{3.id}}\", \"booking_id\": \"\", \"city\": \"{{ifempty(1.city; \"—\")}}\", \"brand\": \"{{ifempty(1.brand; \"SSS\")}}\"}"
+                "text": "⚠️ *Audit Log — Human Action Required*\n*Event:* {{1.triggering_event}}\n*Output:* {{1.output}}\n*Source:* {{1.source_data}}\n*Destination:* {{1.destination}}\n*Brand:* {{ifempty(1.brand; \"SSS\")}} | *City:* {{ifempty(1.city; \"—\")}}\n*Audit Record:* {{3.id}}\n_{{formatDate(now; \"YYYY-MM-DD HH:mm\")}} UTC_"
               },
-              "metadata": { "designer": { "x": 650, "y": -150 } }
+              "metadata": {
+                "designer": { "x": 650, "y": -150 },
+                "restore": {
+                  "parameters": {
+                    "channel": { "label": "#sss-ops-alerts" }
+                  }
+                }
+              }
             }
           ]
         },
@@ -91,9 +97,11 @@
           "flow": [
             {
               "id": 6,
-              "module": "http:ActionSendData",
-              "version": 3,
-              "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
+              "module": "slack:ActionPostMessage",
+              "version": 1,
+              "parameters": {
+                "channel": "#sss-ops-alerts"
+              },
               "filter": {
                 "name": "AUTONOMOUS — routine log",
                 "conditions": [[
@@ -101,12 +109,16 @@
                 ]]
               },
               "mapper": {
-                "url": "PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE",
-                "method": "POST",
-                "headers": [{ "name": "Content-Type", "value": "application/json" }],
-                "body": "{\"alert_type\": \"OPS\", \"severity\": \"INFO\", \"title\": \"📋 Audit Log — {{ifempty(1.approval_state; \"AUTONOMOUS\")}}\", \"body\": \"*Event:* {{1.triggering_event}}\\n*Output:* {{1.output}}\\n*Destination:* {{1.destination}}\\n*Audit Record:* {{3.id}}\", \"booking_id\": \"\", \"city\": \"{{ifempty(1.city; \"—\")}}\", \"brand\": \"{{ifempty(1.brand; \"SSS\")}}\"}"
+                "text": "🟢 *Audit Log — {{ifempty(1.approval_state; \"AUTONOMOUS\")}}*\n*Event:* {{1.triggering_event}}\n*Output:* {{1.output}}\n*Destination:* {{1.destination}}\n*Brand:* {{ifempty(1.brand; \"SSS\")}} | *City:* {{ifempty(1.city; \"—\")}}\n*Audit Record:* {{3.id}}\n_{{formatDate(now; \"YYYY-MM-DD HH:mm\")}} UTC_"
               },
-              "metadata": { "designer": { "x": 650, "y": 150 } }
+              "metadata": {
+                "designer": { "x": 650, "y": 150 },
+                "restore": {
+                  "parameters": {
+                    "channel": { "label": "#sss-ops-alerts" }
+                  }
+                }
+              }
             }
           ]
         }
@@ -131,6 +143,6 @@
       "orphans": []
     },
     "zone": "us2.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection must be rebound to SSS PAT. Table = Audit Log (tblrMpTfMk8q1eNHp). Base = appdZ49WqgjRXxA1R. Copy webhook URL after import — all other scenarios call this via HTTP. PLACEHOLDER: replace PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE in modules 5 and 6. ROUTER: PENDING_HUMAN approval_state → WARNING Slack alert; all others (AUTONOMOUS etc.) → INFO Slack alert. Both post to #sss-ops-alerts via the SSS-SLACK-ALERTS webhook."
+    "notes": "REBINDING REQUIRED: Airtable connection → SSS PAT (module 3). Slack OAuth connection → rebind on modules 5 and 6. Table = Audit Log (tblrMpTfMk8q1eNHp). Base = appdZ49WqgjRXxA1R. Copy webhook URL after import. ROUTER: PENDING_HUMAN → ⚠️ WARNING post to #sss-ops-alerts; all others → 🟢 INFO post to #sss-ops-alerts. No HTTP placeholders — uses native Slack module."
   }
 }
