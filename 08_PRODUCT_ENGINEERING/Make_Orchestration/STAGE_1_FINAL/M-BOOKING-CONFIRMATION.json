@@ -121,7 +121,7 @@
       "id": 6,
       "module": "http:ActionSendData",
       "version": 3,
-      "parameters": { "handleErrors": true, "useNewZLibDeCompress": true },
+      "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
       "mapper": {
         "url": "https://hook.us2.make.com/n2hr4tzsi66ekeyrt65v5v1k4kg4hmqt",
         "method": "POST",
@@ -129,6 +129,19 @@
         "body": "{\"triggering_event\": \"Booking Status = CONFIRMED — Booking Confirmation Send\", \"source_data\": \"Booking: {{ifempty(1.fields.Booking ID; 1.id)}}, Client: {{first(split(ifempty(2.fields.Name; ifempty(1.fields.Client Name; \\\"Valued Guest\\\")); \\\" \\\"))}}, Date: {{formatDate(1.fields.Charter Date; \\\"MMMM D, YYYY\\\")}}, Email: {{ifempty(2.fields.Email; 1.fields.Client Email)}}\", \"output\": \"Confirmation email sent to {{ifempty(2.fields.Email; 1.fields.Client Email)}}. Confirmation SMS sent to {{ifempty(2.fields.Phone; 1.fields.Client Phone)}}. Confirmation_Sent = true. D0 Sent = true.\", \"approval_state\": \"AUTONOMOUS\", \"brand\": \"{{ifempty(1.fields.Brand; \\\"SSS\\\")}}\", \"city\": \"{{1.fields.City}}\", \"environment\": \"Production\", \"destination\": \"Gmail + Quo SMS + Airtable Bookings\"}"
       },
       "metadata": { "designer": { "x": 1000, "y": 0 } }
+    },
+    {
+      "id": 7,
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
+      "mapper": {
+        "url": "PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE",
+        "method": "POST",
+        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+        "body": "{\"alert_type\": \"OPS\", \"severity\": \"INFO\", \"title\": \"✅ Booking Confirmed — Confirmation Sent\", \"body\": \"{{ifempty(1.fields.Client Name; first(split(ifempty(2.fields.Name; \\\"Valued Guest\\\"); \\\" \\\")))}}} — {{1.fields.Yacht Name}} — {{formatDate(1.fields.Charter Date; \\\"MMMM D, YYYY\\\")}}. Confirmation email and SMS sent.\", \"booking_id\": \"{{ifempty(1.fields.Booking ID; 1.id)}}\", \"city\": \"{{1.fields.City}}\", \"brand\": \"{{ifempty(1.fields.Brand; \\\"SSS\\\")}}\"}"
+      },
+      "metadata": { "designer": { "x": 1200, "y": 0 } }
     }
   ],
   "metadata": {
@@ -149,6 +162,6 @@
       "orphans": []
     },
     "zone": "us2.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection (modules 1, 2, 5), Gmail connection (module 3). PLACEHOLDERS: replace PASTE_QUO_API_KEY_HERE (module 4), https://hook.us2.make.com/n2hr4tzsi66ekeyrt65v5v1k4kg4hmqt (module 6). SAFETY CHAIN (filter on module 2): Automations_Paused notEqual true AND Emergency_Flag notEqual true AND Concierge_Assigned equal true AND Confirmation_Sent notEqual true — all four gates in a single AND filter. Trigger: Bookings, Status = CONFIRMED, Confirmation_Sent = 0 (false), Environment = Production. Reads Client record to get fresh email/phone/name. Writes: Confirmation_Sent = true, D0 Sent = true."
+    "notes": "REBINDING REQUIRED: Airtable connection (modules 1, 2, 5), Gmail connection (module 3). PLACEHOLDERS: replace PASTE_QUO_API_KEY_HERE (module 4 — Quo SMS), PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE (module 7 — SSS-SLACK-ALERTS webhook URL). Audit logger URL is live (module 6). SAFETY CHAIN (filter on module 2): Automations_Paused notEqual true AND Emergency_Flag notEqual true AND Concierge_Assigned equal true AND Confirmation_Sent notEqual true — all four gates in a single AND filter. Trigger: Bookings Status = CONFIRMED, Confirmation_Sent = 0, Environment = Production. Reads Client record (module 2) for fresh email/phone/name. Writes: Confirmation_Sent = true, D0 Sent = true."
   }
 }
