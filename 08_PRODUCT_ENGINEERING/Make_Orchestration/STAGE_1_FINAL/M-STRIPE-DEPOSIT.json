@@ -79,16 +79,22 @@
     },
     {
       "id": 8,
-      "module": "http:ActionSendData",
-      "version": 3,
-      "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
-      "mapper": {
-        "url": "PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE",
-        "method": "POST",
-        "headers": [{ "name": "Content-Type", "value": "application/json" }],
-        "body": "{\"alert_type\": \"OPS\", \"severity\": \"INFO\", \"title\": \"💳 Deposit Received\", \"body\": \"${{divide(1.data.object.amount_received; 100)}} deposit confirmed via Stripe. Booking status updated to DEPOSIT_PAID.\", \"booking_id\": \"{{4.fields.Booking ID}}\", \"city\": \"{{4.fields.City}}\", \"brand\": \"{{4.fields.Brand}}\"}"
+      "module": "slack:ActionPostMessage",
+      "version": 1,
+      "parameters": {
+        "channel": "#sss-ops-alerts"
       },
-      "metadata": { "designer": { "x": 600, "y": 0 } }
+      "mapper": {
+        "text": "💳 *Deposit Received*\n*Amount:* ${{divide(1.data.object.amount_received; 100)}} {{uppercase(1.data.object.currency)}}\n*Booking:* {{4.fields.Booking ID}}\n*Brand:* {{4.fields.Brand}} | *City:* {{4.fields.City}}\n*Status updated to:* DEPOSIT_PAID\n_{{formatDate(now; \"YYYY-MM-DD HH:mm\")}} UTC_"
+      },
+      "metadata": {
+        "designer": { "x": 600, "y": 0 },
+        "restore": {
+          "parameters": {
+            "channel": { "label": "#sss-ops-alerts" }
+          }
+        }
+      }
     },
     {
       "id": 9,
@@ -122,6 +128,6 @@
       "orphans": []
     },
     "zone": "us2.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection (modules 4, 7). STRIPE SETUP: register webhook in Stripe → Developers → Webhooks for event payment_intent.succeeded. Copy signing secret into credential vault. PLACEHOLDERS: replace PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE (module 8), https://hook.us2.make.com/n2hr4tzsi66ekeyrt65v5v1k4kg4hmqt (module 9). SAFETY: combined filter on module 7 prevents processing if already DEPOSIT_PAID (idempotency) or Environment = Sandbox. All variables from builtin:SetVariables have been inlined."
+    "notes": "REBINDING REQUIRED: Airtable connection (modules 4, 7), Slack OAuth (module 8). Audit logger URL is live (module 9). STRIPE SETUP: register this scenario webhook URL in Stripe → Developers → Webhooks for event payment_intent.succeeded. SAFETY: filter on module 4 — only processes payment_intent.succeeded events. Filter on module 7 — skips if booking not found, already DEPOSIT_PAID, or Environment = Sandbox."
   }
 }
