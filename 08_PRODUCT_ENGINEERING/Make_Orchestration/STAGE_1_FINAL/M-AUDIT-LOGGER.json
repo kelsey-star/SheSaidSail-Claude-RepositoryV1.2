@@ -16,29 +16,18 @@
       }
     },
     {
-      "id": 2,
-      "module": "builtin:BasicFilter",
-      "version": 1,
-      "parameters": {
-        "condition": {
-          "left": "{{1.environment}}",
-          "operator": "exist"
-        },
-        "throw": false
-      },
-      "mapper": {},
-      "metadata": {
-        "designer": { "x": 200, "y": 0 },
-        "restore": {}
-      }
-    },
-    {
       "id": 3,
       "module": "airtable:ActionCreateRecord",
       "version": 3,
       "parameters": {
         "base": "appdZ49WqgjRXxA1R",
         "table": "tblrMpTfMk8q1eNHp"
+      },
+      "filter": {
+        "name": "Environment must be set",
+        "conditions": [[
+          { "a": "{{1.environment}}", "o": "text:exist" }
+        ]]
       },
       "mapper": {
         "fields": {
@@ -58,34 +47,13 @@
         }
       },
       "metadata": {
-        "designer": { "x": 400, "y": 0 },
+        "designer": { "x": 200, "y": 0 },
         "restore": {
           "parameters": {
             "base": { "label": "She Said Sail" },
             "table": { "label": "Audit Log" }
           }
         }
-      }
-    },
-    {
-      "id": 4,
-      "module": "builtin:SetVariables",
-      "version": 1,
-      "parameters": {},
-      "mapper": {
-        "variables": [
-          {
-            "name": "audit_record_id",
-            "value": "{{3.id}}"
-          },
-          {
-            "name": "audit_success",
-            "value": "true"
-          }
-        ]
-      },
-      "metadata": {
-        "designer": { "x": 600, "y": 0 }
       }
     }
   ],
@@ -106,7 +74,7 @@
     "designer": {
       "orphans": []
     },
-    "zone": "us1.make.com",
+    "zone": "us2.make.com",
     "notes": "REBINDING REQUIRED: Airtable connection must be rebound to SSS PAT. Table = Audit Log (tblrMpTfMk8q1eNHp). Base = appdZ49WqgjRXxA1R. Copy webhook URL after import — all other scenarios call this via HTTP."
   }
 }

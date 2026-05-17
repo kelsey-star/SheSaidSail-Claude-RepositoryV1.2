@@ -16,40 +16,6 @@
       }
     },
     {
-      "id": 2,
-      "module": "builtin:SetVariables",
-      "version": 1,
-      "parameters": {},
-      "mapper": {
-        "variables": [
-          { "name": "stripe_event_type", "value": "{{1.type}}" },
-          { "name": "payment_intent_id", "value": "{{1.data.object.id}}" },
-          { "name": "amount_received", "value": "{{divide(1.data.object.amount_received; 100)}}" },
-          { "name": "currency", "value": "{{1.data.object.currency}}" },
-          { "name": "customer_email", "value": "{{1.data.object.receipt_email}}" },
-          { "name": "metadata_booking_id", "value": "{{1.data.object.metadata.booking_id}}" },
-          { "name": "metadata_request_id", "value": "{{1.data.object.metadata.request_id}}" }
-        ]
-      },
-      "metadata": { "designer": { "x": 200, "y": 0 } }
-    },
-    {
-      "id": 3,
-      "module": "builtin:BasicFilter",
-      "version": 1,
-      "parameters": {
-        "label": "Only process payment_intent.succeeded",
-        "condition": {
-          "left": "{{stripe_event_type}}",
-          "operator": "equal",
-          "right": "payment_intent.succeeded"
-        },
-        "throw": false
-      },
-      "mapper": {},
-      "metadata": { "designer": { "x": 400, "y": 0 } }
-    },
-    {
       "id": 4,
       "module": "airtable:SearchRecords",
       "version": 3,
@@ -58,11 +24,17 @@
         "table": "tbl72omPibBkn2hZL",
         "maxRecords": 1
       },
+      "filter": {
+        "name": "Only process payment_intent.succeeded",
+        "conditions": [[
+          { "a": "{{1.type}}", "o": "text:equal", "b": "payment_intent.succeeded" }
+        ]]
+      },
       "mapper": {
-        "filterByFormula": "OR(FIND(\"{{payment_intent_id}}\", {Stripe Payment Intent ID}), FIND(\"{{payment_intent_id}}\", {Idempotency_Key}))"
+        "filterByFormula": "OR(FIND(\"{{1.data.object.id}}\", {Stripe Payment Intent ID}), FIND(\"{{1.data.object.id}}\", {Idempotency_Key}))"
       },
       "metadata": {
-        "designer": { "x": 600, "y": 0 },
+        "designer": { "x": 200, "y": 0 },
         "restore": {
           "parameters": {
             "base": { "label": "She Said Sail" },
@@ -72,48 +44,20 @@
       }
     },
     {
-      "id": 5,
-      "module": "builtin:BasicFilter",
-      "version": 1,
-      "parameters": {
-        "label": "Booking found and not already DEPOSIT_PAID",
-        "condition": {
-          "left": "{{4.id}}",
-          "operator": "exist",
-          "and": {
-            "left": "{{4.fields.Status}}",
-            "operator": "notEqual",
-            "right": "DEPOSIT_PAID"
-          }
-        },
-        "throw": false
-      },
-      "mapper": {},
-      "metadata": { "designer": { "x": 800, "y": 0 } }
-    },
-    {
-      "id": 6,
-      "module": "builtin:BasicFilter",
-      "version": 1,
-      "parameters": {
-        "label": "Environment check — Production only",
-        "condition": {
-          "left": "{{4.fields.Environment}}",
-          "operator": "notEqual",
-          "right": "Sandbox"
-        },
-        "throw": false
-      },
-      "mapper": {},
-      "metadata": { "designer": { "x": 1000, "y": 0 } }
-    },
-    {
       "id": 7,
       "module": "airtable:ActionUpdateRecord",
       "version": 3,
       "parameters": {
         "base": "appdZ49WqgjRXxA1R",
         "table": "tbl72omPibBkn2hZL"
+      },
+      "filter": {
+        "name": "Booking found, not already DEPOSIT_PAID, and not Sandbox",
+        "conditions": [[
+          { "a": "{{4.id}}", "o": "text:exist" },
+          { "a": "{{4.fields.Status}}", "o": "text:notEqual", "b": "DEPOSIT_PAID" },
+          { "a": "{{4.fields.Environment}}", "o": "text:notEqual", "b": "Sandbox" }
+        ]]
       },
       "mapper": {
         "recordId": "{{4.id}}",
@@ -124,7 +68,7 @@
         }
       },
       "metadata": {
-        "designer": { "x": 1200, "y": 0 },
+        "designer": { "x": 400, "y": 0 },
         "restore": {
           "parameters": {
             "base": { "label": "She Said Sail" },
@@ -142,9 +86,9 @@
         "url": "PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE",
         "method": "POST",
         "headers": [{ "name": "Content-Type", "value": "application/json" }],
-        "body": "{\"alert_type\": \"OPS\", \"severity\": \"INFO\", \"title\": \"💳 Deposit Received\", \"body\": \"${{amount_received}} deposit confirmed via Stripe. Booking status updated to DEPOSIT_PAID.\", \"booking_id\": \"{{4.fields.Booking ID}}\", \"city\": \"{{4.fields.City}}\", \"brand\": \"{{4.fields.Brand}}\"}"
+        "body": "{\"alert_type\": \"OPS\", \"severity\": \"INFO\", \"title\": \"💳 Deposit Received\", \"body\": \"${{divide(1.data.object.amount_received; 100)}} deposit confirmed via Stripe. Booking status updated to DEPOSIT_PAID.\", \"booking_id\": \"{{4.fields.Booking ID}}\", \"city\": \"{{4.fields.City}}\", \"brand\": \"{{4.fields.Brand}}\"}"
       },
-      "metadata": { "designer": { "x": 1400, "y": 0 } }
+      "metadata": { "designer": { "x": 600, "y": 0 } }
     },
     {
       "id": 9,
@@ -155,9 +99,9 @@
         "url": "PASTE_AUDIT_LOGGER_WEBHOOK_URL_HERE",
         "method": "POST",
         "headers": [{ "name": "Content-Type", "value": "application/json" }],
-        "body": "{\"triggering_event\": \"Stripe payment_intent.succeeded — deposit\", \"source_data\": \"Payment Intent ID: {{payment_intent_id}}, Amount: ${{amount_received}} {{currency}}, Customer: {{customer_email}}\", \"output\": \"Booking {{4.fields.Booking ID}} updated to DEPOSIT_PAID\", \"approval_state\": \"AUTONOMOUS\", \"brand\": \"{{4.fields.Brand}}\", \"city\": \"{{4.fields.City}}\", \"environment\": \"{{4.fields.Environment}}\", \"destination\": \"Airtable Bookings (tbl72omPibBkn2hZL)\"}"
+        "body": "{\"triggering_event\": \"Stripe payment_intent.succeeded — deposit\", \"source_data\": \"Payment Intent ID: {{1.data.object.id}}, Amount: ${{divide(1.data.object.amount_received; 100)}} {{1.data.object.currency}}, Customer: {{1.data.object.receipt_email}}\", \"output\": \"Booking {{4.fields.Booking ID}} updated to DEPOSIT_PAID\", \"approval_state\": \"AUTONOMOUS\", \"brand\": \"{{4.fields.Brand}}\", \"city\": \"{{4.fields.City}}\", \"environment\": \"{{4.fields.Environment}}\", \"destination\": \"Airtable Bookings (tbl72omPibBkn2hZL)\"}"
       },
-      "metadata": { "designer": { "x": 1600, "y": 0 } }
+      "metadata": { "designer": { "x": 800, "y": 0 } }
     }
   ],
   "metadata": {
@@ -177,7 +121,7 @@
     "designer": {
       "orphans": []
     },
-    "zone": "us1.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection (modules 4, 7). STRIPE SETUP: register webhook in Stripe → Developers → Webhooks for event payment_intent.succeeded. Copy signing secret into credential vault. PLACEHOLDERS: replace PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE (module 8), PASTE_AUDIT_LOGGER_WEBHOOK_URL_HERE (module 9). SAFETY: filters prevent processing if already DEPOSIT_PAID (idempotency) or Environment = Sandbox. Stripe metadata must include booking_id for lookup."
+    "zone": "us2.make.com",
+    "notes": "REBINDING REQUIRED: Airtable connection (modules 4, 7). STRIPE SETUP: register webhook in Stripe → Developers → Webhooks for event payment_intent.succeeded. Copy signing secret into credential vault. PLACEHOLDERS: replace PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE (module 8), PASTE_AUDIT_LOGGER_WEBHOOK_URL_HERE (module 9). SAFETY: combined filter on module 7 prevents processing if already DEPOSIT_PAID (idempotency) or Environment = Sandbox. All variables from builtin:SetVariables have been inlined."
   }
 }

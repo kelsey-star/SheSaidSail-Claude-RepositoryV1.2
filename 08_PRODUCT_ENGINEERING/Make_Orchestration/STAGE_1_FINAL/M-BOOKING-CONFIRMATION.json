@@ -25,81 +25,26 @@
     },
     {
       "id": 2,
-      "module": "builtin:BasicFilter",
-      "version": 1,
-      "parameters": {
-        "label": "SAFETY: Automations_Paused must be false",
-        "condition": {
-          "left": "{{1.fields.Automations_Paused}}",
-          "operator": "notEqual",
-          "right": "true"
-        },
-        "throw": false
-      },
-      "mapper": {},
-      "metadata": { "designer": { "x": 200, "y": 0 } }
-    },
-    {
-      "id": 3,
-      "module": "builtin:BasicFilter",
-      "version": 1,
-      "parameters": {
-        "label": "SAFETY: Emergency_Flag must be false",
-        "condition": {
-          "left": "{{1.fields.Emergency_Flag}}",
-          "operator": "notEqual",
-          "right": "true"
-        },
-        "throw": false
-      },
-      "mapper": {},
-      "metadata": { "designer": { "x": 400, "y": 0 } }
-    },
-    {
-      "id": 4,
-      "module": "builtin:BasicFilter",
-      "version": 1,
-      "parameters": {
-        "label": "Concierge must be assigned before confirmation",
-        "condition": {
-          "left": "{{1.fields.Concierge_Assigned}}",
-          "operator": "equal",
-          "right": "true"
-        },
-        "throw": false
-      },
-      "mapper": {},
-      "metadata": { "designer": { "x": 600, "y": 0 } }
-    },
-    {
-      "id": 5,
-      "module": "builtin:BasicFilter",
-      "version": 1,
-      "parameters": {
-        "label": "IDEMPOTENCY: Confirmation_Sent must be false",
-        "condition": {
-          "left": "{{1.fields.Confirmation_Sent}}",
-          "operator": "notEqual",
-          "right": "true"
-        },
-        "throw": false
-      },
-      "mapper": {},
-      "metadata": { "designer": { "x": 800, "y": 0 } }
-    },
-    {
-      "id": 6,
       "module": "airtable:GetRecord",
       "version": 3,
       "parameters": {
         "base": "appdZ49WqgjRXxA1R",
         "table": "tblr84vRIWC5HmKvo"
       },
+      "filter": {
+        "name": "SAFETY + IDEMPOTENCY: all four gates must pass",
+        "conditions": [[
+          { "a": "{{1.fields.Automations_Paused}}", "o": "text:notEqual", "b": "true" },
+          { "a": "{{1.fields.Emergency_Flag}}", "o": "text:notEqual", "b": "true" },
+          { "a": "{{1.fields.Concierge_Assigned}}", "o": "text:equal", "b": "true" },
+          { "a": "{{1.fields.Confirmation_Sent}}", "o": "text:notEqual", "b": "true" }
+        ]]
+      },
       "mapper": {
         "recordId": "{{first(1.fields.Client)}}"
       },
       "metadata": {
-        "designer": { "x": 1000, "y": 0 },
+        "designer": { "x": 200, "y": 0 },
         "restore": {
           "parameters": {
             "base": { "label": "She Said Sail" },
@@ -109,36 +54,20 @@
       }
     },
     {
-      "id": 7,
-      "module": "builtin:SetVariables",
-      "version": 1,
-      "parameters": {},
-      "mapper": {
-        "variables": [
-          { "name": "client_email", "value": "{{ifempty(6.fields.Email; 1.fields.Client Email)}}" },
-          { "name": "client_phone", "value": "{{ifempty(6.fields.Phone; 1.fields.Client Phone)}}" },
-          { "name": "client_first_name", "value": "{{first(split(ifempty(6.fields.Name; 1.fields.Client Name); \" \"))}}" },
-          { "name": "brand_name", "value": "{{if(1.fields.Brand = \"ME\"; \"Mare Executive\"; \"She Said Sail\")}}" },
-          { "name": "charter_date_formatted", "value": "{{formatDate(1.fields.Charter Date; \"MMMM D, YYYY\")}}" }
-        ]
-      },
-      "metadata": { "designer": { "x": 1200, "y": 0 } }
-    },
-    {
-      "id": 8,
+      "id": 3,
       "module": "gmail:ActionSendEmail",
       "version": 1,
       "parameters": {
         "account": "hello@shesaidsail.com"
       },
       "mapper": {
-        "to": "{{client_email}}",
-        "subject": "Your {{brand_name}} Charter is Confirmed! 🎉",
+        "to": "{{ifempty(2.fields.Email; 1.fields.Client Email)}}",
+        "subject": "Your {{if(ifempty(1.fields.Brand; \"SSS\") = \"ME\"; \"Mare Executive\"; \"She Said Sail\")}} Charter is Confirmed! 🎉",
         "bodyType": "html",
-        "body": "<p>Hi {{client_first_name}},</p><p>Your charter is officially confirmed! We cannot wait to create an unforgettable experience for you.</p><p><strong>Booking Details:</strong></p><ul><li><strong>Date:</strong> {{charter_date_formatted}}</li><li><strong>Experience:</strong> {{1.fields.Yacht Name}}</li><li><strong>Guests:</strong> {{1.fields.Guest Count}}</li><li><strong>Occasion:</strong> {{1.fields.Occasion}}</li><li><strong>Boarding Location:</strong> {{1.fields.Boarding Location}}</li></ul><p>Your dedicated concierge will be in touch in the next 48 hours with everything you need to know before your charter.</p><p>In the meantime, please don't hesitate to reply to this email with any questions.</p><p>We'll see you on the water.</p><p>Warmly,<br>The {{brand_name}} Team</p>"
+        "body": "<p>Hi {{first(split(ifempty(2.fields.Name; ifempty(1.fields.Client Name; \"Valued Guest\")); \" \"))}},</p><p>Your charter is officially confirmed! We cannot wait to create an unforgettable experience for you.</p><p><strong>Booking Details:</strong></p><ul><li><strong>Date:</strong> {{formatDate(1.fields.Charter Date; \"MMMM D, YYYY\")}}</li><li><strong>Experience:</strong> {{1.fields.Yacht Name}}</li><li><strong>Guests:</strong> {{1.fields.Guest Count}}</li><li><strong>Occasion:</strong> {{1.fields.Occasion}}</li><li><strong>Boarding Location:</strong> {{1.fields.Boarding Location}}</li><li><strong>Booking Reference:</strong> {{ifempty(1.fields.Booking ID; 1.id)}}</li></ul><p>Your dedicated concierge will be in touch in the next 48 hours with everything you need to know before your charter.</p><p>In the meantime, please don't hesitate to reply to this email with any questions.</p><p>We'll see you on the water.</p><p>Warmly,<br>The {{if(ifempty(1.fields.Brand; \"SSS\") = \"ME\"; \"Mare Executive\"; \"She Said Sail\")}} Team</p>"
       },
       "metadata": {
-        "designer": { "x": 1400, "y": 0 },
+        "designer": { "x": 400, "y": 0 },
         "restore": {
           "parameters": {
             "account": { "label": "hello@shesaidsail.com" }
@@ -147,7 +76,7 @@
       }
     },
     {
-      "id": 9,
+      "id": 4,
       "module": "http:ActionSendData",
       "version": 3,
       "parameters": { "handleErrors": true, "useNewZLibDeCompress": true },
@@ -158,12 +87,12 @@
           { "name": "Authorization", "value": "Bearer PASTE_QUO_API_KEY_HERE" },
           { "name": "Content-Type", "value": "application/json" }
         ],
-        "body": "{\"to\": \"{{client_phone}}\", \"body\": \"Hi {{client_first_name}}! Your {{brand_name}} charter on {{charter_date_formatted}} is confirmed! 🎉 Your concierge will reach out in the next 48 hours. Questions? Email hello@shesaidsail.com — Reply STOP to opt out.\"}"
+        "body": "{\"to\": \"{{ifempty(2.fields.Phone; 1.fields.Client Phone)}}\", \"body\": \"Hi {{first(split(ifempty(2.fields.Name; ifempty(1.fields.Client Name; \\\"Valued Guest\\\")); \\\" \\\"))}}! Your {{if(ifempty(1.fields.Brand; \\\"SSS\\\") = \\\"ME\\\"; \\\"Mare Executive\\\"; \\\"She Said Sail\\\")}} charter on {{formatDate(1.fields.Charter Date; \\\"MMMM D, YYYY\\\")}} is confirmed! 🎉 Your concierge will reach out in the next 48 hours. Questions? Email hello@shesaidsail.com — Reply STOP to opt out.\"}"
       },
-      "metadata": { "designer": { "x": 1600, "y": 0 } }
+      "metadata": { "designer": { "x": 600, "y": 0 } }
     },
     {
-      "id": 10,
+      "id": 5,
       "module": "airtable:ActionUpdateRecord",
       "version": 3,
       "parameters": {
@@ -179,7 +108,7 @@
         }
       },
       "metadata": {
-        "designer": { "x": 1800, "y": 0 },
+        "designer": { "x": 800, "y": 0 },
         "restore": {
           "parameters": {
             "base": { "label": "She Said Sail" },
@@ -189,30 +118,17 @@
       }
     },
     {
-      "id": 11,
+      "id": 6,
       "module": "http:ActionSendData",
       "version": 3,
-      "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
+      "parameters": { "handleErrors": true, "useNewZLibDeCompress": true },
       "mapper": {
-        "url": "PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE",
+        "url": "PASTE_OPS_LOGGER_ALERTER_WEBHOOK_URL_HERE",
         "method": "POST",
         "headers": [{ "name": "Content-Type", "value": "application/json" }],
-        "body": "{\"alert_type\": \"OPS\", \"severity\": \"INFO\", \"title\": \"✉️ Booking Confirmation Sent\", \"body\": \"Confirmation email and SMS sent to {{client_first_name}} for booking {{1.fields.Booking ID}} on {{charter_date_formatted}}.\", \"booking_id\": \"{{1.fields.Booking ID}}\", \"city\": \"{{1.fields.City}}\", \"brand\": \"{{1.fields.Brand}}\"}"
+        "body": "{\"triggering_event\": \"Booking Status = CONFIRMED — Booking Confirmation Send\", \"source_data\": \"Booking: {{ifempty(1.fields.Booking ID; 1.id)}}, Client: {{first(split(ifempty(2.fields.Name; ifempty(1.fields.Client Name; \\\"Valued Guest\\\")); \\\" \\\"))}}, Date: {{formatDate(1.fields.Charter Date; \\\"MMMM D, YYYY\\\")}}, Email: {{ifempty(2.fields.Email; 1.fields.Client Email)}}\", \"output\": \"Confirmation email sent to {{ifempty(2.fields.Email; 1.fields.Client Email)}}. Confirmation SMS sent to {{ifempty(2.fields.Phone; 1.fields.Client Phone)}}. Confirmation_Sent = true. D0 Sent = true.\", \"approval_state\": \"AUTONOMOUS\", \"brand\": \"{{ifempty(1.fields.Brand; \\\"SSS\\\")}}\", \"city\": \"{{1.fields.City}}\", \"environment\": \"Production\", \"destination\": \"Gmail + Quo SMS + Airtable Bookings\"}"
       },
-      "metadata": { "designer": { "x": 2000, "y": 0 } }
-    },
-    {
-      "id": 12,
-      "module": "http:ActionSendData",
-      "version": 3,
-      "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
-      "mapper": {
-        "url": "PASTE_AUDIT_LOGGER_WEBHOOK_URL_HERE",
-        "method": "POST",
-        "headers": [{ "name": "Content-Type", "value": "application/json" }],
-        "body": "{\"triggering_event\": \"Booking Status = CONFIRMED — Booking Confirmation Send\", \"source_data\": \"Booking: {{1.fields.Booking ID}}, Client: {{client_first_name}}, Date: {{charter_date_formatted}}, Email: {{client_email}}\", \"output\": \"Confirmation email sent to {{client_email}}. Confirmation SMS sent to {{client_phone}}. Confirmation_Sent = true. D0 Sent = true.\", \"approval_state\": \"AUTONOMOUS\", \"brand\": \"{{1.fields.Brand}}\", \"city\": \"{{1.fields.City}}\", \"environment\": \"Production\", \"destination\": \"Gmail + Quo SMS + Airtable Bookings\"}"
-      },
-      "metadata": { "designer": { "x": 2200, "y": 0 } }
+      "metadata": { "designer": { "x": 1000, "y": 0 } }
     }
   ],
   "metadata": {
@@ -232,7 +148,7 @@
     "designer": {
       "orphans": []
     },
-    "zone": "us1.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection (modules 1, 6, 10), Gmail connection (module 8). PLACEHOLDERS: replace PASTE_QUO_API_KEY_HERE (module 9), PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE (module 11), PASTE_AUDIT_LOGGER_WEBHOOK_URL_HERE (module 12). SAFETY CHAIN (modules 2-5): Automations_Paused → Emergency_Flag → Concierge_Assigned → Confirmation_Sent (idempotency). All four must pass before ANY outbound action. Trigger: Bookings, Status = CONFIRMED, Confirmation_Sent = 0 (false), Environment = Production. Writes: Confirmation_Sent = true, D0 Sent = true."
+    "zone": "us2.make.com",
+    "notes": "REBINDING REQUIRED: Airtable connection (modules 1, 2, 5), Gmail connection (module 3). PLACEHOLDERS: replace PASTE_QUO_API_KEY_HERE (module 4), PASTE_OPS_LOGGER_ALERTER_WEBHOOK_URL_HERE (module 6). SAFETY CHAIN (filter on module 2): Automations_Paused notEqual true AND Emergency_Flag notEqual true AND Concierge_Assigned equal true AND Confirmation_Sent notEqual true — all four gates in a single AND filter. Trigger: Bookings, Status = CONFIRMED, Confirmation_Sent = 0 (false), Environment = Production. Reads Client record to get fresh email/phone/name. Writes: Confirmation_Sent = true, D0 Sent = true."
   }
 }
