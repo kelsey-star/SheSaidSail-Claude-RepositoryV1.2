@@ -68,6 +68,12 @@
           "Boarding Location": "{{1.fields.Boarding Location}}",
           "Charter Notes": "{{1.fields.Special Requests}}",
           "Add-ons": "{{1.fields.Add-Ons Selected}}",
+          "Brand": "{{1.fields.Brand}}",
+          "City": "{{1.fields.City}}",
+          "Client": "{{1.fields.Client}}",
+          "Client Name": "{{1.fields.First Name}} {{1.fields.Last Name}}",
+          "Client Email": "{{1.fields.Email}}",
+          "Client Phone": "{{1.fields.Phone}}",
           "Environment": "Production",
           "Source_System": "Make",
           "Idempotency_Key": "BOOKING-{{1.id}}-{{formatDate(now; \"YYYYMMDD\")}}",
@@ -160,9 +166,9 @@
       },
       "mapper": {
         "to": "{{1.fields.Email}}",
-        "subject": "Your {{1.fields.Brand}} Deposit Link — {{1.fields.First Name}}",
+        "subject": "Your {{if(1.fields.Brand = \"ME\"; \"Mare Executive\"; \"She Said Sail\")}} Deposit Link — {{1.fields.First Name}}",
         "bodyType": "html",
-        "body": "<p>Hi {{1.fields.First Name}},</p><p>Great news — we've confirmed availability for your {{1.fields.Experience}} on {{1.fields.Preferred Date}}!</p><p>To secure your booking, please complete your 50% deposit using the link below:</p><p><a href=\"{{6.url}}\"><strong>Pay Deposit Now</strong></a></p><p><strong>Deposit Amount:</strong> ${{divide(6.line_items.data.0.price_data.unit_amount; 100)}}</p><p>Once your deposit is received, you'll receive your full booking confirmation. This link expires in 24 hours.</p><p>Questions? Just reply to this email.</p><p>Warmly,<br>The {{if(1.fields.Brand = \"ME\"; \"Mare Executive\"; \"She Said Sail\")}} Team</p>"
+        "body": "<p>Hi {{1.fields.First Name}},</p><p>Great news — we've confirmed availability for your {{1.fields.Experience}} on {{1.fields.Preferred Date}}!</p><p>To secure your booking, please complete your 50% deposit using the link below:</p><p><a href=\"{{6.url}}\"><strong>Pay Deposit Now</strong></a></p><p>Once your deposit is received, you'll receive your full booking confirmation. This link expires in 24 hours.</p><p>Questions? Just reply to this email.</p><p>Warmly,<br>The {{if(1.fields.Brand = \"ME\"; \"Mare Executive\"; \"She Said Sail\")}} Team</p>"
       },
       "metadata": {
         "designer": { "x": 1000, "y": 0 },
@@ -204,16 +210,22 @@
     },
     {
       "id": 12,
-      "module": "http:ActionSendData",
-      "version": 3,
-      "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
-      "mapper": {
-        "url": "PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE",
-        "method": "POST",
-        "headers": [{ "name": "Content-Type", "value": "application/json" }],
-        "body": "{\"alert_type\": \"OPS\", \"severity\": \"INFO\", \"title\": \"📋 Booking Created — Deposit Sent\", \"body\": \"{{1.fields.First Name}} {{1.fields.Last Name}} — {{1.fields.Experience}} — {{1.fields.Preferred Date}}. Deposit link sent via email and SMS.\", \"booking_id\": \"{{5.id}}\", \"city\": \"{{1.fields.City}}\", \"brand\": \"{{1.fields.Brand}}\"}"
+      "module": "slack:ActionPostMessage",
+      "version": 1,
+      "parameters": {
+        "channel": "#sss-ops-alerts"
       },
-      "metadata": { "designer": { "x": 1600, "y": 0 } }
+      "mapper": {
+        "text": "📋 *Booking Created — Deposit Sent*\n*Client:* {{1.fields.First Name}} {{1.fields.Last Name}}\n*Experience:* {{1.fields.Experience}}\n*Date:* {{1.fields.Preferred Date}} | *Guests:* {{1.fields.Guest Count}}\n*Brand:* {{1.fields.Brand}} | *City:* {{1.fields.City}}\n*Booking ID:* {{5.id}}\n*Deposit link sent via email and SMS.*\n_{{formatDate(now; \"YYYY-MM-DD HH:mm\")}} UTC_"
+      },
+      "metadata": {
+        "designer": { "x": 1600, "y": 0 },
+        "restore": {
+          "parameters": {
+            "channel": { "label": "#sss-ops-alerts" }
+          }
+        }
+      }
     }
   ],
   "metadata": {
@@ -234,6 +246,6 @@
       "orphans": []
     },
     "zone": "us2.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection (modules 1, 3, 5, 7), Stripe connection (module 6 — TEST MODE), Gmail connection (module 9). PLACEHOLDERS: replace PASTE_QUO_API_KEY_HERE (module 10), https://hook.us2.make.com/n2hr4tzsi66ekeyrt65v5v1k4kg4hmqt (module 11), PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE (module 12). SAFETY: idempotency check (module 3→5 filter) prevents duplicate bookings. Automations_Paused check (filter on module 9) prevents outbound if paused. All variables from builtin:SetVariables have been inlined."
+    "notes": "REBINDING REQUIRED: Airtable connection (modules 1, 3, 5, 7), Stripe connection (module 6 — TEST MODE first), Gmail connection (module 9), Slack OAuth (module 12). PLACEHOLDER: replace PASTE_QUO_API_KEY_HERE (module 10 — Quo SMS). Audit logger URL is live (module 11). SAFETY: idempotency filter on module 5 prevents duplicate bookings. Automations_Paused filter on module 9 prevents outbound email/SMS if paused."
   }
 }
