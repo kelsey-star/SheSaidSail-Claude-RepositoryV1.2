@@ -12,7 +12,7 @@
       "mapper": {},
       "metadata": {
         "designer": { "x": 0, "y": 0 },
-        "restore": { "parameters": { "hook": { "label": "SSS Lead Intake Webhook — register in Webflow" } } }
+        "restore": { "parameters": { "hook": { "label": "SSS Lead Intake Webhook — register URL in Webflow Form Submission" } } }
       }
     },
     {
@@ -21,10 +21,11 @@
       "version": 3,
       "parameters": {
         "base": "appdZ49WqgjRXxA1R",
-        "table": "tblTlSB9CO4dTGodg"
+        "table": "tblTlSB9CO4dTGodg",
+        "maxRecords": 1
       },
       "mapper": {
-        "filterByFormula": "FIND(\"{{concat(\"LEAD-\"; sha256(join([1.email; 1.preferred_date; 1.guest_count]; \"|\")))}}\", {Idempotency_Key})"
+        "filterByFormula": "FIND(\"LEAD-{{1.email}}-{{1.preferred_date}}-{{1.guest_count}}\", {Idempotency_Key})"
       },
       "metadata": {
         "designer": { "x": 200, "y": 0 },
@@ -38,40 +39,17 @@
     },
     {
       "id": 5,
-      "module": "http:ActionSendData",
-      "version": 3,
-      "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
-      "filter": {
-        "name": "Skip if duplicate",
-        "conditions": [[
-          { "a": "{{3.id}}", "o": "text:notExist" }
-        ]]
-      },
-      "mapper": {
-        "url": "PASTE_BRAND_ROUTER_WEBHOOK_URL_HERE",
-        "method": "POST",
-        "headers": [{ "name": "Content-Type", "value": "application/json" }],
-        "body": "{\"request_record_id\": \"\", \"source_url\": \"{{1.source_url}}\", \"form_name\": \"{{1.form_name}}\"}"
-      },
-      "metadata": { "designer": { "x": 400, "y": 0 } }
-    },
-    {
-      "id": 6,
-      "module": "json:ParseJSON",
-      "version": 1,
-      "parameters": {},
-      "mapper": {
-        "string": "{{5.body}}"
-      },
-      "metadata": { "designer": { "x": 600, "y": 0 } }
-    },
-    {
-      "id": 7,
       "module": "airtable:ActionCreateRecord",
       "version": 3,
       "parameters": {
         "base": "appdZ49WqgjRXxA1R",
         "table": "tblTlSB9CO4dTGodg"
+      },
+      "filter": {
+        "name": "Skip if duplicate lead",
+        "conditions": [[
+          { "a": "{{3.id}}", "o": "text:notExist" }
+        ]]
       },
       "mapper": {
         "fields": {
@@ -84,18 +62,21 @@
           "Duration": "{{1.duration}}",
           "Preferred Date": "{{1.preferred_date}}",
           "Guest Count": "{{toNumber(1.guest_count)}}",
+          "Occasion": "{{1.occasion}}",
+          "Boarding Location": "{{1.boarding_location}}",
           "Add-Ons Selected": "{{1.add_ons}}",
           "Special Requests": "{{1.special_requests}}",
           "Status": "NEW",
           "Environment": "Production",
           "Source_System": "Make",
-          "Brand": "{{6.brand}}",
-          "Notes": "Source: {{1.source_url}} | Idempotency: {{concat(\"LEAD-\"; sha256(join([1.email; 1.preferred_date; 1.guest_count]; \"|\")))}}",
-          "Idempotency_Key": "{{concat(\"LEAD-\"; sha256(join([1.email; 1.preferred_date; 1.guest_count]; \"|\")))}}"
+          "Brand": "{{if(contains(1.source_url; \"mareexecutive.com\"); \"ME\"; \"SSS\")}}",
+          "City": "{{1.city}}",
+          "Submission Date": "{{formatDate(now; \"YYYY-MM-DDTHH:mm:ssZ\")}}",
+          "Idempotency_Key": "LEAD-{{1.email}}-{{1.preferred_date}}-{{1.guest_count}}"
         }
       },
       "metadata": {
-        "designer": { "x": 800, "y": 0 },
+        "designer": { "x": 400, "y": 0 },
         "restore": {
           "parameters": {
             "base": { "label": "She Said Sail" },
@@ -105,7 +86,7 @@
       }
     },
     {
-      "id": 8,
+      "id": 6,
       "module": "gmail:ActionSendEmail",
       "version": 1,
       "parameters": {
@@ -113,12 +94,12 @@
       },
       "mapper": {
         "to": "{{1.email}}",
-        "subject": "We received your {{if(6.brand = \"ME\"; \"Mare Executive\"; \"She Said Sail\")}} inquiry, {{1.first_name}}!",
+        "subject": "We received your {{if(contains(1.source_url; \"mareexecutive.com\"); \"Mare Executive\"; \"She Said Sail\")}} inquiry, {{1.first_name}}!",
         "bodyType": "html",
-        "body": "<p>Hi {{1.first_name}},</p><p>Thank you for reaching out! We've received your inquiry and our team will be in touch within a few hours to discuss availability and details for your {{1.occasion}} experience.</p><p>Here's a summary of what you submitted:</p><ul><li><strong>Experience:</strong> {{1.experience}}</li><li><strong>Preferred Date:</strong> {{1.preferred_date}}</li><li><strong>Guests:</strong> {{1.guest_count}}</li></ul><p>We'll reach out shortly. In the meantime, feel free to reply to this email with any questions.</p><p>Warmly,<br>The {{if(6.brand = \"ME\"; \"Mare Executive\"; \"She Said Sail\")}} Team</p>"
+        "body": "<p>Hi {{1.first_name}},</p><p>Thank you for reaching out! We've received your inquiry and our team will be in touch within a few hours to discuss availability and details for your experience.</p><p>Here's a summary of what you submitted:</p><ul><li><strong>Experience:</strong> {{1.experience}}</li><li><strong>Preferred Date:</strong> {{1.preferred_date}}</li><li><strong>Guests:</strong> {{1.guest_count}}</li></ul><p>We'll reach out shortly. In the meantime, feel free to reply to this email with any questions.</p><p>Warmly,<br>The {{if(contains(1.source_url; \"mareexecutive.com\"); \"Mare Executive\"; \"She Said Sail\")}} Team</p>"
       },
       "metadata": {
-        "designer": { "x": 1000, "y": 0 },
+        "designer": { "x": 600, "y": 0 },
         "restore": {
           "parameters": {
             "account": { "label": "hello@shesaidsail.com" }
@@ -127,20 +108,26 @@
       }
     },
     {
-      "id": 9,
-      "module": "http:ActionSendData",
-      "version": 3,
-      "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
-      "mapper": {
-        "url": "PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE",
-        "method": "POST",
-        "headers": [{ "name": "Content-Type", "value": "application/json" }],
-        "body": "{\"alert_type\": \"LEAD\", \"severity\": \"INFO\", \"title\": \"New {{6.brand}} Lead\", \"body\": \"{{1.first_name}} {{1.last_name}} — {{1.occasion}} — {{1.preferred_date}} — {{1.guest_count}} guests\", \"booking_id\": \"{{7.id}}\", \"city\": \"{{1.city}}\", \"brand\": \"{{6.brand}}\", \"lead_name\": \"{{1.first_name}} {{1.last_name}}\", \"occasion\": \"{{1.occasion}}\", \"preferred_date\": \"{{1.preferred_date}}\", \"guest_count\": \"{{1.guest_count}}\", \"source\": \"{{1.source_url}}\"}"
+      "id": 7,
+      "module": "slack:ActionPostMessage",
+      "version": 1,
+      "parameters": {
+        "channel": "#sss-ops-alerts"
       },
-      "metadata": { "designer": { "x": 1200, "y": 0 } }
+      "mapper": {
+        "text": "🆕 *New Lead — {{if(contains(1.source_url; \"mareexecutive.com\"); \"Mare Executive\"; \"She Said Sail\")}}*\n*Name:* {{1.first_name}} {{1.last_name}}\n*Experience:* {{1.experience}}\n*Date:* {{1.preferred_date}} | *Guests:* {{1.guest_count}}\n*Occasion:* {{1.occasion}}\n*Email:* {{1.email}} | *Phone:* {{1.phone}}\n*Source:* {{1.source_url}}\n*Record:* {{5.id}}\n_{{formatDate(now; \"YYYY-MM-DD HH:mm\")}} UTC_"
+      },
+      "metadata": {
+        "designer": { "x": 800, "y": 0 },
+        "restore": {
+          "parameters": {
+            "channel": { "label": "#sss-ops-alerts" }
+          }
+        }
+      }
     },
     {
-      "id": 10,
+      "id": 8,
       "module": "http:ActionSendData",
       "version": 3,
       "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
@@ -148,9 +135,9 @@
         "url": "https://hook.us2.make.com/n2hr4tzsi66ekeyrt65v5v1k4kg4hmqt",
         "method": "POST",
         "headers": [{ "name": "Content-Type", "value": "application/json" }],
-        "body": "{\"triggering_event\": \"Webflow form submission — Lead Intake\", \"source_data\": \"Email: {{1.email}}, Date: {{1.preferred_date}}, Guests: {{1.guest_count}}, Source: {{1.source_url}}\", \"output\": \"Request record created: {{7.id}}. Auto-reply sent. Slack notified.\", \"approval_state\": \"AUTONOMOUS\", \"brand\": \"{{6.brand}}\", \"city\": \"{{1.city}}\", \"environment\": \"Production\", \"model_version\": \"N/A\", \"destination\": \"Airtable Requests + Gmail + Slack #sss-lead-intake\"}"
+        "body": "{\"triggering_event\": \"Webflow form submission — Lead Intake\", \"source_data\": \"Email: {{1.email}}, Date: {{1.preferred_date}}, Guests: {{1.guest_count}}, Source: {{1.source_url}}\", \"output\": \"Request record created: {{5.id}}. Auto-reply sent to {{1.email}}. Slack notified.\", \"approval_state\": \"AUTONOMOUS\", \"brand\": \"{{if(contains(1.source_url; \\\"mareexecutive.com\\\"); \\\"ME\\\"; \\\"SSS\\\")}}\", \"city\": \"{{1.city}}\", \"environment\": \"Production\", \"destination\": \"Airtable Requests (tblTlSB9CO4dTGodg) + Gmail + Slack #sss-ops-alerts\"}"
       },
-      "metadata": { "designer": { "x": 1400, "y": 0 } }
+      "metadata": { "designer": { "x": 1000, "y": 0 } }
     }
   ],
   "metadata": {
@@ -171,6 +158,6 @@
       "orphans": []
     },
     "zone": "us2.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection (modules 3, 7), Gmail connection (module 8). PLACEHOLDERS: replace PASTE_BRAND_ROUTER_WEBHOOK_URL_HERE (module 5), PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE (module 9), https://hook.us2.make.com/n2hr4tzsi66ekeyrt65v5v1k4kg4hmqt (module 10). Register webhook URL in Webflow → Form Submission. Idempotency: checks Requests table for matching idempotency key before creating new record. All variables from builtin:SetVariables have been inlined."
+    "notes": "REBINDING REQUIRED: Airtable connection (modules 3, 5), Gmail connection (module 6), Slack OAuth (module 7). Audit logger URL is live (module 8). AFTER IMPORT: copy this scenario webhook URL and paste into Webflow Form Submission settings. Brand is determined inline from source_url (mareexecutive.com = ME, else SSS) — no dependency on Brand Router. Idempotency key: LEAD-email-date-guestcount. Filter on module 5 prevents duplicate records."
   }
 }
