@@ -12,9 +12,7 @@
       "mapper": {},
       "metadata": {
         "designer": { "x": 0, "y": 0 },
-        "restore": {
-          "parameters": { "hook": { "label": "SSS Audit Logger Webhook" } }
-        }
+        "restore": { "parameters": { "hook": { "label": "SSS Audit Logger Webhook" } } }
       }
     },
     {
@@ -67,6 +65,12 @@
       "metadata": { "designer": { "x": 450, "y": 0 } },
       "routes": [
         {
+          "filter": {
+            "name": "PENDING_HUMAN — human action required",
+            "conditions": [[
+              { "a": "{{1.approval_state}}", "o": "text:equal", "b": "PENDING_HUMAN" }
+            ]]
+          },
           "flow": [
             {
               "id": 5,
@@ -75,27 +79,25 @@
               "parameters": {
                 "channel": "#sss-ops-alerts"
               },
-              "filter": {
-                "name": "PENDING_HUMAN — human action required",
-                "conditions": [[
-                  { "a": "{{1.approval_state}}", "o": "text:equal", "b": "PENDING_HUMAN" }
-                ]]
-              },
               "mapper": {
                 "text": "⚠️ *Audit Log — Human Action Required*\n*Event:* {{1.triggering_event}}\n*Output:* {{1.output}}\n*Source:* {{1.source_data}}\n*Destination:* {{1.destination}}\n*Brand:* {{ifempty(1.brand; \"SSS\")}} | *City:* {{ifempty(1.city; \"—\")}}\n*Audit Record:* {{3.id}}\n_{{formatDate(now; \"YYYY-MM-DD HH:mm\")}} UTC_"
               },
               "metadata": {
                 "designer": { "x": 650, "y": -150 },
                 "restore": {
-                  "parameters": {
-                    "channel": { "label": "#sss-ops-alerts" }
-                  }
+                  "parameters": { "channel": { "label": "#sss-ops-alerts" } }
                 }
               }
             }
           ]
         },
         {
+          "filter": {
+            "name": "AUTONOMOUS — routine log",
+            "conditions": [[
+              { "a": "{{1.approval_state}}", "o": "text:notEqual", "b": "PENDING_HUMAN" }
+            ]]
+          },
           "flow": [
             {
               "id": 6,
@@ -104,21 +106,13 @@
               "parameters": {
                 "channel": "#sss-ops-alerts"
               },
-              "filter": {
-                "name": "AUTONOMOUS — routine log",
-                "conditions": [[
-                  { "a": "{{1.approval_state}}", "o": "text:notEqual", "b": "PENDING_HUMAN" }
-                ]]
-              },
               "mapper": {
                 "text": "🟢 *Audit Log — {{ifempty(1.approval_state; \"AUTONOMOUS\")}}*\n*Event:* {{1.triggering_event}}\n*Output:* {{1.output}}\n*Destination:* {{1.destination}}\n*Brand:* {{ifempty(1.brand; \"SSS\")}} | *City:* {{ifempty(1.city; \"—\")}}\n*Audit Record:* {{3.id}}\n_{{formatDate(now; \"YYYY-MM-DD HH:mm\")}} UTC_"
               },
               "metadata": {
                 "designer": { "x": 650, "y": 150 },
                 "restore": {
-                  "parameters": {
-                    "channel": { "label": "#sss-ops-alerts" }
-                  }
+                  "parameters": { "channel": { "label": "#sss-ops-alerts" } }
                 }
               }
             }
@@ -143,6 +137,6 @@
     },
     "designer": { "orphans": [] },
     "zone": "us2.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection → SSS PAT (module 3). Slack OAuth connection → rebind modules 5 and 6. Table = Audit Log (tblrMpTfMk8q1eNHp). Base = appdZ49WqgjRXxA1R. Copy webhook URL after import. No HTTP placeholders — native Slack modules only. ROUTER: PENDING_HUMAN → ⚠️ WARNING to #sss-ops-alerts; AUTONOMOUS → 🟢 INFO to #sss-ops-alerts."
+    "notes": "REBINDING REQUIRED: Airtable connection → SSS PAT (module 3). Slack OAuth connection → rebind modules 5 and 6. Table = Audit Log (tblrMpTfMk8q1eNHp). Copy webhook URL after import. Route filters are on route objects — not on modules. PENDING_HUMAN → ⚠️ WARNING to #sss-ops-alerts. AUTONOMOUS → 🟢 INFO to #sss-ops-alerts."
   }
 }

@@ -96,7 +96,7 @@
       "version": 3,
       "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
       "mapper": {
-        "url": "PASTE_AUDIT_LOGGER_WEBHOOK_URL_HERE",
+        "url": "https://hook.us2.make.com/n2hr4tzsi66ekeyrt65v5v1k4kg4hmqt",
         "method": "POST",
         "headers": [{ "name": "Content-Type", "value": "application/json" }],
         "body": "{\"triggering_event\": \"Stripe payment_intent.succeeded — deposit\", \"source_data\": \"Payment Intent ID: {{1.data.object.id}}, Amount: ${{divide(1.data.object.amount_received; 100)}} {{1.data.object.currency}}, Customer: {{1.data.object.receipt_email}}\", \"output\": \"Booking {{4.fields.Booking ID}} updated to DEPOSIT_PAID\", \"approval_state\": \"AUTONOMOUS\", \"brand\": \"{{4.fields.Brand}}\", \"city\": \"{{4.fields.City}}\", \"environment\": \"{{4.fields.Environment}}\", \"destination\": \"Airtable Bookings (tbl72omPibBkn2hZL)\"}"
@@ -122,6 +122,6 @@
       "orphans": []
     },
     "zone": "us2.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection (modules 4, 7). STRIPE SETUP: register webhook in Stripe → Developers → Webhooks for event payment_intent.succeeded. Copy signing secret into credential vault. PLACEHOLDERS: replace PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE (module 8), PASTE_AUDIT_LOGGER_WEBHOOK_URL_HERE (module 9). SAFETY: combined filter on module 7 prevents processing if already DEPOSIT_PAID (idempotency) or Environment = Sandbox. All variables from builtin:SetVariables have been inlined."
+    "notes": "REBINDING REQUIRED: Airtable connection (modules 4, 7). STRIPE SETUP: register webhook in Stripe → Developers → Webhooks for event payment_intent.succeeded. Copy signing secret into credential vault. PLACEHOLDERS: replace PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE (module 8), https://hook.us2.make.com/n2hr4tzsi66ekeyrt65v5v1k4kg4hmqt (module 9). SAFETY: combined filter on module 7 prevents processing if already DEPOSIT_PAID (idempotency) or Environment = Sandbox. All variables from builtin:SetVariables have been inlined."
   }
 }

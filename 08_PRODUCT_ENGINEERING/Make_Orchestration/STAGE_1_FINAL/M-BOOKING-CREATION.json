@@ -195,7 +195,7 @@
       "version": 3,
       "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
       "mapper": {
-        "url": "PASTE_AUDIT_LOGGER_WEBHOOK_URL_HERE",
+        "url": "https://hook.us2.make.com/n2hr4tzsi66ekeyrt65v5v1k4kg4hmqt",
         "method": "POST",
         "headers": [{ "name": "Content-Type", "value": "application/json" }],
         "body": "{\"triggering_event\": \"Request Status = AVAILABILITY_CONFIRMED — Booking Creation\", \"source_data\": \"Request ID: {{1.id}}, Client: {{1.fields.First Name}} {{1.fields.Last Name}}, Date: {{1.fields.Preferred Date}}\", \"output\": \"Booking created: {{5.id}}. Stripe deposit link generated. Email and SMS sent.\", \"approval_state\": \"AUTONOMOUS\", \"brand\": \"{{1.fields.Brand}}\", \"city\": \"{{1.fields.City}}\", \"environment\": \"Production\", \"destination\": \"Airtable Bookings + Stripe + Gmail + Quo SMS\"}"
@@ -234,6 +234,6 @@
       "orphans": []
     },
     "zone": "us2.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection (modules 1, 3, 5, 7), Stripe connection (module 6 — TEST MODE), Gmail connection (module 9). PLACEHOLDERS: replace PASTE_QUO_API_KEY_HERE (module 10), PASTE_AUDIT_LOGGER_WEBHOOK_URL_HERE (module 11), PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE (module 12). SAFETY: idempotency check (module 3→5 filter) prevents duplicate bookings. Automations_Paused check (filter on module 9) prevents outbound if paused. All variables from builtin:SetVariables have been inlined."
+    "notes": "REBINDING REQUIRED: Airtable connection (modules 1, 3, 5, 7), Stripe connection (module 6 — TEST MODE), Gmail connection (module 9). PLACEHOLDERS: replace PASTE_QUO_API_KEY_HERE (module 10), https://hook.us2.make.com/n2hr4tzsi66ekeyrt65v5v1k4kg4hmqt (module 11), PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE (module 12). SAFETY: idempotency check (module 3→5 filter) prevents duplicate bookings. Automations_Paused check (filter on module 9) prevents outbound if paused. All variables from builtin:SetVariables have been inlined."
   }
 }

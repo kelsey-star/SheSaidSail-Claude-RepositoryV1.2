@@ -145,7 +145,7 @@
       "version": 3,
       "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
       "mapper": {
-        "url": "PASTE_AUDIT_LOGGER_WEBHOOK_URL_HERE",
+        "url": "https://hook.us2.make.com/n2hr4tzsi66ekeyrt65v5v1k4kg4hmqt",
         "method": "POST",
         "headers": [{ "name": "Content-Type", "value": "application/json" }],
         "body": "{\"triggering_event\": \"Webflow form submission — Lead Intake\", \"source_data\": \"Email: {{1.email}}, Date: {{1.preferred_date}}, Guests: {{1.guest_count}}, Source: {{1.source_url}}\", \"output\": \"Request record created: {{7.id}}. Auto-reply sent. Slack notified.\", \"approval_state\": \"AUTONOMOUS\", \"brand\": \"{{6.brand}}\", \"city\": \"{{1.city}}\", \"environment\": \"Production\", \"model_version\": \"N/A\", \"destination\": \"Airtable Requests + Gmail + Slack #sss-lead-intake\"}"
@@ -171,6 +171,6 @@
       "orphans": []
     },
     "zone": "us2.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection (modules 3, 7), Gmail connection (module 8). PLACEHOLDERS: replace PASTE_BRAND_ROUTER_WEBHOOK_URL_HERE (module 5), PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE (module 9), PASTE_AUDIT_LOGGER_WEBHOOK_URL_HERE (module 10). Register webhook URL in Webflow → Form Submission. Idempotency: checks Requests table for matching idempotency key before creating new record. All variables from builtin:SetVariables have been inlined."
+    "notes": "REBINDING REQUIRED: Airtable connection (modules 3, 7), Gmail connection (module 8). PLACEHOLDERS: replace PASTE_BRAND_ROUTER_WEBHOOK_URL_HERE (module 5), PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE (module 9), https://hook.us2.make.com/n2hr4tzsi66ekeyrt65v5v1k4kg4hmqt (module 10). Register webhook URL in Webflow → Form Submission. Idempotency: checks Requests table for matching idempotency key before creating new record. All variables from builtin:SetVariables have been inlined."
   }
 }

@@ -24,6 +24,12 @@
       "metadata": { "designer": { "x": 200, "y": 0 } },
       "routes": [
         {
+          "filter": {
+            "name": "SSS Route",
+            "conditions": [[
+              { "a": "{{1.source_url}}", "o": "text:contain", "b": "shesaidsail.com" }
+            ]]
+          },
           "flow": [
             {
               "id": 5,
@@ -32,12 +38,6 @@
               "parameters": {
                 "base": "appdZ49WqgjRXxA1R",
                 "table": "tblTlSB9CO4dTGodg"
-              },
-              "filter": {
-                "name": "SSS Route",
-                "conditions": [[
-                  { "a": "{{1.source_url}}", "o": "text:contain", "b": "shesaidsail.com" }
-                ]]
               },
               "mapper": {
                 "recordId": "{{1.request_record_id}}",
@@ -70,6 +70,12 @@
           ]
         },
         {
+          "filter": {
+            "name": "ME Route",
+            "conditions": [[
+              { "a": "{{1.source_url}}", "o": "text:contain", "b": "mareexecutive.com" }
+            ]]
+          },
           "flow": [
             {
               "id": 8,
@@ -78,12 +84,6 @@
               "parameters": {
                 "base": "appdZ49WqgjRXxA1R",
                 "table": "tblTlSB9CO4dTGodg"
-              },
-              "filter": {
-                "name": "ME Route",
-                "conditions": [[
-                  { "a": "{{1.source_url}}", "o": "text:contain", "b": "mareexecutive.com" }
-                ]]
               },
               "mapper": {
                 "recordId": "{{1.request_record_id}}",
@@ -116,6 +116,13 @@
           ]
         },
         {
+          "filter": {
+            "name": "Ambiguous — Needs Classification",
+            "conditions": [[
+              { "a": "{{1.source_url}}", "o": "text:notContain", "b": "shesaidsail.com" },
+              { "a": "{{1.source_url}}", "o": "text:notContain", "b": "mareexecutive.com" }
+            ]]
+          },
           "flow": [
             {
               "id": 11,
@@ -123,13 +130,6 @@
               "version": 1,
               "parameters": {
                 "channel": "#sss-ops-alerts"
-              },
-              "filter": {
-                "name": "Ambiguous — Needs Classification",
-                "conditions": [[
-                  { "a": "{{1.source_url}}", "o": "text:notContain", "b": "shesaidsail.com" },
-                  { "a": "{{1.source_url}}", "o": "text:notContain", "b": "mareexecutive.com" }
-                ]]
               },
               "mapper": {
                 "text": "⚠️ *Brand Classification UNKNOWN — Manual Action Required*\nInbound request from *{{1.source_url}}* could not be classified as SSS or ME.\n*Request ID:* {{1.request_record_id}}\nLuciana: please set the Brand field manually in Airtable.\n_{{formatDate(now; \"YYYY-MM-DD HH:mm\")}} UTC_"
@@ -175,6 +175,6 @@
     },
     "designer": { "orphans": [] },
     "zone": "us2.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection → SSS PAT (modules 5, 8). Slack OAuth connection → rebind module 11. No HTTP placeholders — native Slack module only. ROUTER: shesaidsail.com → Brand=SSS + WebhookRespond 200; mareexecutive.com → Brand=ME + WebhookRespond 200; neither → Slack ⚠️ WARNING to #sss-ops-alerts + WebhookRespond 200 UNKNOWN."
+    "notes": "REBINDING REQUIRED: Airtable connection (modules 5, 8). Slack OAuth connection (module 11). Route filters are on route objects — not on modules inside routes. SSS route → Brand=SSS + respond 200. ME route → Brand=ME + respond 200. Ambiguous → Slack ⚠️ WARNING to #sss-ops-alerts + respond 200 UNKNOWN."
   }
 }
