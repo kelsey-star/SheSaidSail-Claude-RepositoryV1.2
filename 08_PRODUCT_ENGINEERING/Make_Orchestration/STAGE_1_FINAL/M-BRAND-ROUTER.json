@@ -21,9 +21,7 @@
       "version": 1,
       "parameters": {},
       "mapper": {},
-      "metadata": {
-        "designer": { "x": 200, "y": 0 }
-      },
+      "metadata": { "designer": { "x": 200, "y": 0 } },
       "routes": [
         {
           "flow": [
@@ -67,7 +65,7 @@
                 "status": "200",
                 "body": "{\"brand\": \"SSS\", \"routing_confidence\": \"HIGH\"}"
               },
-              "metadata": { "designer": { "x": 600, "y": -200 } }
+              "metadata": { "designer": { "x": 650, "y": -200 } }
             }
           ]
         },
@@ -113,7 +111,7 @@
                 "status": "200",
                 "body": "{\"brand\": \"ME\", \"routing_confidence\": \"HIGH\"}"
               },
-              "metadata": { "designer": { "x": 600, "y": 0 } }
+              "metadata": { "designer": { "x": 650, "y": 0 } }
             }
           ]
         },
@@ -121,9 +119,11 @@
           "flow": [
             {
               "id": 11,
-              "module": "http:ActionSendData",
-              "version": 3,
-              "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
+              "module": "slack:ActionPostMessage",
+              "version": 1,
+              "parameters": {
+                "channel": "#sss-ops-alerts"
+              },
               "filter": {
                 "name": "Ambiguous — Needs Classification",
                 "conditions": [[
@@ -132,12 +132,16 @@
                 ]]
               },
               "mapper": {
-                "url": "PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE",
-                "method": "POST",
-                "headers": [{ "name": "Content-Type", "value": "application/json" }],
-                "body": "{\"alert_type\": \"OPS\", \"severity\": \"WARNING\", \"title\": \"Brand classification UNKNOWN — manual action required\", \"body\": \"Inbound request from {{1.source_url}} could not be classified as SSS or ME. Request ID: {{1.request_record_id}}. Luciana: please set Brand field manually.\", \"booking_id\": \"{{1.request_record_id}}\", \"city\": \"Unknown\", \"brand\": \"UNKNOWN\"}"
+                "text": "⚠️ *Brand Classification UNKNOWN — Manual Action Required*\nInbound request from *{{1.source_url}}* could not be classified as SSS or ME.\n*Request ID:* {{1.request_record_id}}\nLuciana: please set the Brand field manually in Airtable.\n_{{formatDate(now; \"YYYY-MM-DD HH:mm\")}} UTC_"
               },
-              "metadata": { "designer": { "x": 400, "y": 200 } }
+              "metadata": {
+                "designer": { "x": 400, "y": 200 },
+                "restore": {
+                  "parameters": {
+                    "channel": { "label": "#sss-ops-alerts" }
+                  }
+                }
+              }
             },
             {
               "id": 15,
@@ -148,7 +152,7 @@
                 "status": "200",
                 "body": "{\"brand\": \"UNKNOWN\", \"routing_confidence\": \"LOW\"}"
               },
-              "metadata": { "designer": { "x": 600, "y": 200 } }
+              "metadata": { "designer": { "x": 650, "y": 200 } }
             }
           ]
         }
@@ -169,10 +173,8 @@
       "dlq": false,
       "freshVariables": false
     },
-    "designer": {
-      "orphans": []
-    },
+    "designer": { "orphans": [] },
     "zone": "us2.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection on modules 5 and 8. PLACEHOLDER: replace PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE in module 11. Router: SSS (shesaidsail.com) → Brand=SSS, ME (mareexecutive.com) → Brand=ME, neither → UNKNOWN + Slack alert. Each route responds to caller with JSON brand classification."
+    "notes": "REBINDING REQUIRED: Airtable connection → SSS PAT (modules 5, 8). Slack OAuth connection → rebind module 11. No HTTP placeholders — native Slack module only. ROUTER: shesaidsail.com → Brand=SSS + WebhookRespond 200; mareexecutive.com → Brand=ME + WebhookRespond 200; neither → Slack ⚠️ WARNING to #sss-ops-alerts + WebhookRespond 200 UNKNOWN."
   }
 }

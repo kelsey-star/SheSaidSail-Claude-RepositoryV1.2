@@ -12,7 +12,9 @@
       "mapper": {},
       "metadata": {
         "designer": { "x": 0, "y": 0 },
-        "restore": { "parameters": { "hook": { "label": "SSS Audit Logger Webhook" } } }
+        "restore": {
+          "parameters": { "hook": { "label": "SSS Audit Logger Webhook" } }
+        }
       }
     },
     {
@@ -139,10 +141,8 @@
       "dlq": false,
       "freshVariables": false
     },
-    "designer": {
-      "orphans": []
-    },
+    "designer": { "orphans": [] },
     "zone": "us2.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection → SSS PAT (module 3). Slack OAuth connection → rebind on modules 5 and 6. Table = Audit Log (tblrMpTfMk8q1eNHp). Base = appdZ49WqgjRXxA1R. Copy webhook URL after import. ROUTER: PENDING_HUMAN → ⚠️ WARNING post to #sss-ops-alerts; all others → 🟢 INFO post to #sss-ops-alerts. No HTTP placeholders — uses native Slack module."
+    "notes": "REBINDING REQUIRED: Airtable connection → SSS PAT (module 3). Slack OAuth connection → rebind modules 5 and 6. Table = Audit Log (tblrMpTfMk8q1eNHp). Base = appdZ49WqgjRXxA1R. Copy webhook URL after import. No HTTP placeholders — native Slack modules only. ROUTER: PENDING_HUMAN → ⚠️ WARNING to #sss-ops-alerts; AUTONOMOUS → 🟢 INFO to #sss-ops-alerts."
   }
 }
