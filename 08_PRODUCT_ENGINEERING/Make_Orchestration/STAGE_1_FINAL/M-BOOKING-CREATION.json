@@ -210,22 +210,16 @@
     },
     {
       "id": 12,
-      "module": "slack:ActionPostMessage",
-      "version": 1,
-      "parameters": {
-        "channel": "#sss-ops-alerts"
-      },
+      "module": "http:ActionSendData",
+      "version": 3,
+      "parameters": { "handleErrors": false, "useNewZLibDeCompress": true },
       "mapper": {
-        "text": "📋 *Booking Created — Deposit Sent*\n*Client:* {{1.fields.First Name}} {{1.fields.Last Name}}\n*Experience:* {{1.fields.Experience}}\n*Date:* {{1.fields.Preferred Date}} | *Guests:* {{1.fields.Guest Count}}\n*Brand:* {{1.fields.Brand}} | *City:* {{1.fields.City}}\n*Booking ID:* {{5.id}}\n*Deposit link sent via email and SMS.*\n_{{formatDate(now; \"YYYY-MM-DD HH:mm\")}} UTC_"
+        "url": "PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE",
+        "method": "POST",
+        "headers": [{ "name": "Content-Type", "value": "application/json" }],
+        "body": "{\"alert_type\": \"OPS\", \"severity\": \"INFO\", \"title\": \"📋 Booking Created — Deposit Sent\", \"body\": \"{{1.fields.First Name}} {{1.fields.Last Name}} — {{1.fields.Experience}} — {{1.fields.Preferred Date}}. Deposit link sent via email and SMS.\", \"booking_id\": \"{{5.id}}\", \"city\": \"{{1.fields.City}}\", \"brand\": \"{{1.fields.Brand}}\"}"
       },
-      "metadata": {
-        "designer": { "x": 1600, "y": 0 },
-        "restore": {
-          "parameters": {
-            "channel": { "label": "#sss-ops-alerts" }
-          }
-        }
-      }
+      "metadata": { "designer": { "x": 1600, "y": 0 } }
     }
   ],
   "metadata": {
@@ -246,6 +240,6 @@
       "orphans": []
     },
     "zone": "us2.make.com",
-    "notes": "REBINDING REQUIRED: Airtable connection (modules 1, 3, 5, 7), Stripe connection (module 6 — TEST MODE first), Gmail connection (module 9), Slack OAuth (module 12). PLACEHOLDER: replace PASTE_QUO_API_KEY_HERE (module 10 — Quo SMS). Audit logger URL is live (module 11). SAFETY: idempotency filter on module 5 prevents duplicate bookings. Automations_Paused filter on module 9 prevents outbound email/SMS if paused."
+    "notes": "REBINDING REQUIRED: Airtable connection (modules 1, 3, 5, 7), Stripe connection (module 6 — TEST MODE first), Gmail connection (module 9). PLACEHOLDERS: replace PASTE_QUO_API_KEY_HERE (module 10 — Quo SMS), PASTE_SLACK_ALERTS_WEBHOOK_URL_HERE (module 12 — SSS-SLACK-ALERTS webhook URL). Audit logger URL is live (module 11). SAFETY: idempotency filter on module 5 prevents duplicate bookings. Automations_Paused filter on module 9 prevents outbound email/SMS if paused."
   }
 }
