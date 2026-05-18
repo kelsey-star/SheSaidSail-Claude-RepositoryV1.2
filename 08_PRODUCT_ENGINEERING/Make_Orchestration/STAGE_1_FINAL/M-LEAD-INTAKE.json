@@ -61,7 +61,7 @@
           "Experience": "{{1.experience}}",
           "Duration": "{{1.duration}}",
           "Preferred Date": "{{1.preferred_date}}",
-          "Guest Count": "{{toNumber(1.guest_count)}}",
+          "Guest Count": "{{1.guest_count}}",
           "Occasion": "{{1.occasion}}",
           "Boarding Location": "{{1.boarding_location}}",
           "Add-Ons Selected": "{{1.add_ons}}",
@@ -71,7 +71,6 @@
           "Source_System": "Make",
           "Brand": "{{if(contains(1.source_url; \"mareexecutive.com\"); \"ME\"; \"SSS\")}}",
           "City": "{{1.city}}",
-          "Submission Date": "{{formatDate(now; \"YYYY-MM-DDTHH:mm:ssZ\")}}",
           "Idempotency_Key": "LEAD-{{1.email}}-{{1.preferred_date}}-{{1.guest_count}}"
         }
       },
