@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSS Lead Intake Test Portal</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia', serif; background: #f4f4f4; padding: 40px 20px; }
+  .container { max-width: 700px; margin: 0 auto; background: #fff; border-radius: 8px; overflow: hidden; }
+  .header { background: #0a2342; padding: 32px 40px; }
+  .header h1 { color: #c9a84c; font-size: 22px; letter-spacing: 2px; }
+  .header p { color: #ffffff; font-size: 13px; margin-top: 8px; opacity: 0.7; }
+  .body { padding: 40px; }
+  .webhook-box { background: #fff3cd; border-left: 4px solid #c9a84c; padding: 16px; margin-bottom: 32px; border-radius: 4px; }
+  .webhook-box label { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #0a2342; font-weight: bold; display: block; margin-bottom: 8px; }
+  .webhook-box input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; font-family: monospace; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.full { grid-column: 1 / -1; }
+  label { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #666; font-weight: bold; }
+  input, select, textarea { padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; font-family: 'Georgia', serif; width: 100%; }
+  textarea { resize: vertical; min-height: 80px; }
+  .btn { background: #c9a84c; color: #0a2342; border: none; padding: 16px 40px; font-size: 15px; font-weight: bold; letter-spacing: 1px; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 32px; }
+  .btn:hover { background: #b8963d; }
+  .result { margin-top: 24px; padding: 16px; border-radius: 4px; display: none; font-size: 14px; }
+  .result.success { background: #d4edda; border-left: 4px solid #28a745; color: #155724; }
+  .result.error { background: #f8d7da; border-left: 4px solid #dc3545; color: #721c24; }
+  .divider { border: none; border-top: 1px solid #eee; margin: 28px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>SSS LEAD INTAKE TEST PORTAL</h1>
+    <p>Fires a test payload directly to the Make webhook</p>
+  </div>
+  <div class="body">
+    <div class="webhook-box">
+      <label>Webhook URL (paste from Make Module 1)</label>
+      <input type="text" id="webhookUrl" value="https://hook.us2.make.com/mox2njbub46zk2e2t573p285cvbue94i">
+    </div>
+
+    <div class="grid">
+      <div class="field">
+        <label>First Name</label>
+        <input type="text" id="first_name" value="Will">
+      </div>
+      <div class="field">
+        <label>Last Name</label>
+        <input type="text" id="last_name" value="Hunt">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="email" value="wjhunt11@gmail.com">
+      </div>
+      <div class="field">
+        <label>Phone</label>
+        <input type="text" id="phone" value="6308005980">
+      </div>
+      <div class="field">
+        <label>Experience</label>
+        <input type="text" id="experience" value="Sunset Sailing Charter">
+      </div>
+      <div class="field">
+        <label>Yacht</label>
+        <input type="text" id="yacht" value="Lucky Star">
+      </div>
+      <div class="field">
+        <label>Preferred Date</label>
+        <input type="text" id="preferred_date" value="2026-06-20">
+      </div>
+      <div class="field">
+        <label>Duration</label>
+        <input type="text" id="duration" value="3 hours">
+      </div>
+      <div class="field">
+        <label>Guest Count</label>
+        <input type="number" id="guest_count" value="4">
+      </div>
+      <div class="field">
+        <label>Occasion</label>
+        <input type="text" id="occasion" value="Birthday">
+      </div>
+      <div class="field">
+        <label>City</label>
+        <input type="text" id="city" value="Chicago">
+      </div>
+      <div class="field">
+        <label>Boarding Location</label>
+        <input type="text" id="boarding_location" value="Navy Pier, Chicago">
+      </div>
+      <div class="field">
+        <label>Add-Ons</label>
+        <input type="text" id="add_ons" value="Champagne Package">
+      </div>
+      <div class="field">
+        <label>Source URL</label>
+        <input type="text" id="source_url" value="https://shesaidsail.com/book">
+      </div>
+      <div class="field full">
+        <label>Special Requests</label>
+        <textarea id="special_requests">This is a test submission. Please ignore.</textarea>
+      </div>
+    </div>
+
+    <button class="btn" onclick="submitLead()">FIRE TEST PAYLOAD</button>
+    <div class="result" id="result"></div>
+  </div>
+</div>
+
+<script>
+async function submitLead() {
+  const url = document.getElementById('webhookUrl').value.trim();
+  if (!url) { alert('Paste your webhook URL first.'); return; }
+
+  const payload = {
+    first_name: document.getElementById('first_name').value,
+    last_name: document.getElementById('last_name').value,
+    email: document.getElementById('email').value,
+    phone: document.getElementById('phone').value,
+    experience: document.getElementById('experience').value,
+    yacht: document.getElementById('yacht').value,
+    preferred_date: document.getElementById('preferred_date').value,
+    duration: document.getElementById('duration').value,
+    guest_count: document.getElementById('guest_count').value,
+    occasion: document.getElementById('occasion').value,
+    city: document.getElementById('city').value,
+    boarding_location: document.getElementById('boarding_location').value,
+    add_ons: document.getElementById('add_ons').value,
+    source_url: document.getElementById('source_url').value,
+    special_requests: document.getElementById('special_requests').value
+  };
+
+  const btn = document.querySelector('.btn');
+  btn.textContent = 'FIRING...';
+  btn.disabled = true;
+
+  const result = document.getElementById('result');
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    result.style.display = 'block';
+    if (res.ok) {
+      result.className = 'result success';
+      result.textContent = '✅ Payload fired successfully. Check Make execution history and Airtable Requests table.';
+    } else {
+      result.className = 'result error';
+      result.textContent = '❌ Webhook returned: ' + res.status + ' ' + res.statusText;
+    }
+  } catch (e) {
+    result.style.display = 'block';
+    result.className = 'result error';
+    result.textContent = '❌ Error: ' + e.message + ' (check CORS — try pasting the payload into Postman if this fails)';
+  }
+
+  btn.textContent = 'FIRE TEST PAYLOAD';
+  btn.disabled = false;
+}
+</script>
+</body>
+</html>
