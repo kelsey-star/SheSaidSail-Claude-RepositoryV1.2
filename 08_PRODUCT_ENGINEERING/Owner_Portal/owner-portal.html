@@ -177,7 +177,7 @@ const CONFIG = {
   OWNER_PASSWORD:   'changeme',
   AIRTABLE_TOKEN:   '',               // Your Airtable Personal Access Token (pat...)
   AIRTABLE_BASE:    'appdZ49WqgjRXxA1R',
-  ANTHROPIC_KEY:    '',               // Optional — for AI Chat tab
+  ANTHROPIC_KEY:    '',               // Optional — for AI Chat
   AI_MODEL:         'claude-haiku-4-5-20251001',
 
   WEBHOOKS: {
@@ -286,6 +286,10 @@ const soMonth = (offset = 0) => { const d = new Date(); d.setDate(1); d.setHours
 const eoMonth = (offset = 0) => { const d = soMonth(offset + 1); d.setMilliseconds(-1); return d; };
 const inMonth = (d, offset = 0) => { if (!d) return false; const dt = new Date(d); return dt >= soMonth(offset) && dt <= eoMonth(offset); };
 const sum = (arr, fn) => arr.reduce((a, r) => a + (Number(fn(r)) || 0), 0);
+
+/* Password stored in localStorage overrides CONFIG default */
+const getPassword = () => localStorage.getItem('sss_portal_pw') || CONFIG.OWNER_PASSWORD;
+const setPassword = (pw) => localStorage.setItem('sss_portal_pw', pw);
 
 const auditLog = async (event, details, recordId = '') => {
   if (!CONFIG.TABLES.AUDIT_LOG) return;
@@ -421,13 +425,45 @@ TABLES.APPROVAL_QUEUE:  fill in after creating per airtable-schema.md`}</div>
   );
 }
 
+function ChangePasswordModal({ onClose, toast }) {
+  const [current, setCurrent] = React.useState('');
+  const [next, setNext]       = React.useState('');
+  const [confirm, setConfirm] = React.useState('');
+  const [err, setErr]         = React.useState('');
+
+  const submit = () => {
+    if (current !== getPassword()) { setErr('Current password is incorrect.'); return; }
+    if (next.length < 4)           { setErr('New password must be at least 4 characters.'); return; }
+    if (next !== confirm)          { setErr('Passwords do not match.'); return; }
+    setPassword(next);
+    toast('Password updated.', 'success');
+    onClose();
+  };
+
+  return (
+    <div className="modal-wrap" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal-card">
+        <div className="modal-title">Change Password</div>
+        <input className="modal-input" type="password" placeholder="Current password" value={current} onChange={e => setCurrent(e.target.value)} autoFocus />
+        <input className="modal-input" type="password" placeholder="New password" value={next} onChange={e => setNext(e.target.value)} />
+        <input className="modal-input" type="password" placeholder="Confirm new password" value={confirm} onChange={e => setConfirm(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} />
+        {err && <p style={{ color: 'var(--red)', fontSize: 13, marginBottom: 12 }}>{err}</p>}
+        <div className="modal-row">
+          <button className="btn btn-gold" style={{ flex: 1 }} onClick={submit}>SAVE</button>
+          <button className="btn btn-ghost" style={{ flex: 1 }} onClick={onClose}>CANCEL</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AuthGate({ onAuth }) {
   const [pw, setPw] = React.useState('');
   const [err, setErr] = React.useState(false);
   const [shake, setShake] = React.useState(false);
 
   const submit = () => {
-    if (pw === CONFIG.OWNER_PASSWORD) { onAuth(); }
+    if (pw === getPassword()) { onAuth(); }
     else {
       setErr(true); setShake(true);
       setTimeout(() => { setErr(false); setShake(false); }, 2000);
@@ -1512,13 +1548,14 @@ AI authority: You may recommend, draft, and analyze. You may not approve payouts
    MAIN APP
    ═══════════════════════════════════════════════════════════════ */
 function App() {
-  const [authed,     setAuthed]     = React.useState(false);
-  const [configured, setConfigured] = React.useState(true);
-  const [tab,        setTab]        = React.useState('pulse');
-  const [chatOpen,   setChatOpen]   = React.useState(false);
-  const [loading,    setLoading]    = React.useState(true);
-  const [toasts,     setToasts]     = React.useState([]);
-  const [lastFetched,setLastFetched]= React.useState(null);
+  const [authed,      setAuthed]      = React.useState(false);
+  const [configured,  setConfigured]  = React.useState(true);
+  const [tab,         setTab]         = React.useState('pulse');
+  const [chatOpen,    setChatOpen]    = React.useState(false);
+  const [loading,     setLoading]     = React.useState(true);
+  const [toasts,      setToasts]      = React.useState([]);
+  const [lastFetched, setLastFetched] = React.useState(null);
+  const [changePwOpen,setChangePwOpen]= React.useState(false);
 
   const [leads,     setLeads]     = React.useState([]);
   const [bookings,  setBookings]  = React.useState([]);
@@ -1534,7 +1571,7 @@ function App() {
   React.useEffect(() => {
     if (!CONFIG.AIRTABLE_TOKEN) { setConfigured(false); return; }
     const session = JSON.parse(localStorage.getItem('sss_portal_session') || 'null');
-    if (session && session.expiry > Date.now()) setAuthed(true);
+    if (session && session.expiry > Date.now()) { setLoading(false); setAuthed(true); }
   }, []);
 
   const toast = React.useCallback((msg, type = 'success') => {
@@ -1727,6 +1764,8 @@ function App() {
     <div className="screen">
       <ToastContainer toasts={toasts} />
 
+      {changePwOpen && <ChangePasswordModal onClose={() => setChangePwOpen(false)} toast={toast} />}
+
       <EmergencyBanner bookings={emergencies} />
 
       <div className="content">
@@ -1738,13 +1777,24 @@ function App() {
               {{ pulse: 'Pulse', decisions: 'Decisions', leads: 'Leads', bookings: 'Bookings', money: 'Money', people: 'People', marketing: 'Ads' }[tab]}
             </p>
           </div>
-          <button
-            className="btn btn-ghost btn-sm"
-            style={{ height: 32, padding: '0 12px', fontSize: 11 }}
-            onClick={() => { localStorage.removeItem('sss_portal_session'); setAuthed(false); }}
-          >
-            <Icon n="logout" sz={14} />
-          </button>
+          <div className="row" style={{ gap: 8 }}>
+            <button
+              className="btn btn-ghost btn-sm"
+              style={{ height: 32, padding: '0 12px', fontSize: 10, letterSpacing: 1 }}
+              title="Change password"
+              onClick={() => setChangePwOpen(true)}
+            >
+              PW
+            </button>
+            <button
+              className="btn btn-ghost btn-sm"
+              style={{ height: 32, padding: '0 12px', fontSize: 11 }}
+              title="Log out"
+              onClick={() => { localStorage.removeItem('sss_portal_session'); setAuthed(false); }}
+            >
+              <Icon n="logout" sz={14} />
+            </button>
+          </div>
         </div>
 
         {tab === 'pulse' && (
