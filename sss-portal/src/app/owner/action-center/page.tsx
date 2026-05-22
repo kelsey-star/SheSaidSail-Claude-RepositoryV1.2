@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Zap, Filter } from 'lucide-react'
+import { Zap } from 'lucide-react'
 import { getActionItems } from '@/lib/airtable'
 import { ActionItemRow } from '@/components/ui/action-item-row'
 

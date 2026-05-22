@@ -75,9 +75,9 @@ export default async function CharterBoardPage() {
                     {(f.Client_Name as string) ?? '—'} · {(f.Vessel as string) ?? '—'} ·{' '}
                     {(f.Destination as string) ?? '—'}
                   </div>
-                  {f.Flag_Reason && (
+                  {f.Flag_Reason ? (
                     <div className="text-xs text-red-400 mt-0.5">{f.Flag_Reason as string}</div>
-                  )}
+                  ) : null}
                 </div>
                 <span className="text-sm text-[#808080] text-right">
                   {fmtDate(f.Charter_Date as string)}

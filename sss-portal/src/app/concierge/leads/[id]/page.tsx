@@ -81,7 +81,7 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
           </div>
 
           {/* Notes */}
-          {f.Notes && (
+          {f.Notes ? (
             <div className="bg-[#141414] border border-[#252525] rounded-xl p-5">
               <h2 className="text-xs font-medium uppercase tracking-widest text-[#505050] mb-3">
                 Notes
@@ -90,7 +90,7 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
                 {f.Notes as string}
               </p>
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Actions sidebar */}

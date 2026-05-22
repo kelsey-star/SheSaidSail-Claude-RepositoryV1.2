@@ -136,16 +136,11 @@ export const leads = {
   async getActive(): Promise<ATRecord[]> {
     return getAll(T.REQUESTS, {
       filterByFormula: `NOT(OR({Status}="CLOSED_WON",{Status}="CLOSED_LOST"))`,
-      sort: [0, 1].map((i) =>
-        i === 0
-          ? JSON.stringify({ field: 'SLA_Status', direction: 'desc' })
-          : JSON.stringify({ field: 'Created', direction: 'desc' })
-      ) as unknown as string,
-    }).catch(() =>
-      getAll(T.REQUESTS, {
-        filterByFormula: `NOT(OR({Status}="CLOSED_WON",{Status}="CLOSED_LOST"))`,
-      })
-    )
+      'sort[0][field]': 'SLA_Status',
+      'sort[0][direction]': 'desc',
+      'sort[1][field]': 'Created',
+      'sort[1][direction]': 'desc',
+    })
   },
 
   async getActionRequired(): Promise<ATRecord[]> {
@@ -224,13 +219,10 @@ export const bookings = {
 export const activity = {
   async getRecent(limit = 50): Promise<ATRecord[]> {
     return getAll(T.AUDIT_LOG, {
-      sort: JSON.stringify([{ field: 'Created', direction: 'desc' }]) as unknown as string,
+      'sort[0][field]': 'Created',
+      'sort[0][direction]': 'desc',
       maxRecords: String(limit),
-    }).catch(() =>
-      getAll(T.AUDIT_LOG, {
-        maxRecords: String(limit),
-      })
-    )
+    })
   },
 
   async getUnresolved(): Promise<ATRecord[]> {
