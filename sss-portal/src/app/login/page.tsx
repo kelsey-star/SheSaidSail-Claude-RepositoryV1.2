@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { LoginForm } from './login-form'
 
@@ -27,9 +28,11 @@ export default function LoginPage() {
           <p className="text-sm text-[#505050] mt-1">Operations Portal</p>
         </div>
 
-        {/* Form card */}
+        {/* Form card — Suspense required because LoginForm reads useSearchParams */}
         <div className="bg-[#141414] border border-[#252525] rounded-2xl p-8">
-          <LoginForm />
+          <Suspense fallback={<div className="h-[200px]" />}>
+            <LoginForm />
+          </Suspense>
         </div>
 
         <p className="text-center text-xs text-[#303030] mt-6">
